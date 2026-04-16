@@ -2,7 +2,7 @@ package com.junwoo.lootwise.deal.dto
 
 import java.math.BigDecimal
 
-data class DealSummaryResponse(
+data class DealDetailResponse(
     val appId: Long,
     val name: String,
     val originalPrice: BigDecimal?,

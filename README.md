@@ -36,3 +36,60 @@ src/main/kotlin/com/junwoo/steamdealshub
 ├── steam         # Steam API 연동
 ├── deal          # 할인 게임 조회/추천 도메인
 └── batch         # 스케줄러 및 수집 작업
+```
+
+## 로컬 DB 실행
+
+### 1. 데이터베이스 시작 방법
+
+프로젝트 루트에서 아래 명령으로 PostgreSQL 16 컨테이너를 실행합니다.
+
+```bash
+docker compose up -d
+```
+
+중지:
+
+```bash
+docker compose down
+```
+
+데이터까지 삭제:
+
+```bash
+docker compose down -v
+```
+
+### 2. Spring Boot에서 연결하는 방법
+
+현재 애플리케이션은 아래 설정으로 로컬 PostgreSQL에 연결합니다.
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lootwise
+    username: postgres
+    password: postgres
+```
+
+`docker-compose.yml`로 DB를 올리면 별도 수정 없이 바로 연결할 수 있습니다.
+
+### 3. DB 실행 여부 확인 방법
+
+컨테이너 상태 확인:
+
+```bash
+docker compose ps
+```
+
+헬스체크 상태 확인:
+
+```bash
+docker inspect --format='{{json .State.Health}}' lootwise-postgres
+```
+
+DB 응답 확인:
+
+```bash
+docker exec -it lootwise-postgres pg_isready -U postgres -d lootwise
+```

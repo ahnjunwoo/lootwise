@@ -2,7 +2,7 @@ spring:
   application:
     name: lootwise
   datasource:
-    url: jdbc:postgresql://localhost:5432/steam_deals_hub
+    url: jdbc:postgresql://localhost:5432/lootwise
     username: postgres
     password: postgres
   jpa:
@@ -22,6 +22,10 @@ management:
         include: health,info
 
 steam:
+  api:
+    base-url: https://store.steampowered.com
+    reviews-base-url: https://store.steampowered.com
+    timeout: 5s
   batch:
     collect-cron: "0 0 * * * *"
 

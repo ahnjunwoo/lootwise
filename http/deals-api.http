@@ -1,0 +1,64 @@
+@baseUrl = http://localhost:8080
+@limit = 20
+@appId = 570
+
+### Top deals
+GET {{baseUrl}}/api/v1/deals?limit={{limit}}
+Accept: application/json
+
+> {%
+client.test("Top deals status is 200", function() {
+  client.assert(response.status === 200, "Expected 200 OK");
+});
+%}
+
+# Expected response example
+# [
+#   {
+#     "appId": 570,
+#     "name": "Dota 2",
+#     "originalPrice": 19.99,
+#     "finalPrice": 9.99,
+#     "discountPercent": 50,
+#     "reviewScoreDesc": "Very Positive",
+#     "steamUrl": "https://store.steampowered.com/app/570",
+#     "capsuleImageUrl": "https://cdn.example.com/570.jpg"
+#   }
+# ]
+
+###
+### Deal detail
+GET {{baseUrl}}/api/v1/deals/{{appId}}
+Accept: application/json
+
+> {%
+client.test("Deal detail status is 200", function() {
+  client.assert(response.status === 200, "Expected 200 OK");
+});
+%}
+
+# Expected response example
+# {
+#   "appId": 570,
+#   "name": "Dota 2",
+#   "originalPrice": 19.99,
+#   "finalPrice": 9.99,
+#   "discountPercent": 50,
+#   "reviewScoreDesc": "Very Positive",
+#   "steamUrl": "https://store.steampowered.com/app/570",
+#   "capsuleImageUrl": "https://cdn.example.com/570.jpg"
+# }
+
+###
+### Validation example: invalid limit
+GET {{baseUrl}}/api/v1/deals?limit=0
+Accept: application/json
+
+# Expected: 400 Bad Request
+
+###
+### Not found example
+GET {{baseUrl}}/api/v1/deals/999999999
+Accept: application/json
+
+# Expected: 404 Not Found
