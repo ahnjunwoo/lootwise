@@ -1,0 +1,16 @@
+$kind: http-request
+description: Validation example for limit.
+url: "{{baseUrl}}/api/v1/deals?limit=0"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  limit: "0"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 400", function () {
+          pm.response.to.have.status(400);
+      });
+    language: text/javascript
+order: 3000

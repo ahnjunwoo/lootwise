@@ -1,0 +1,14 @@
+$kind: http-request
+description: Returns deal detail for the given Steam appId.
+url: "{{baseUrl}}/api/v1/deals/{{appId}}"
+method: GET
+headers:
+  Accept: application/json
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });
+    language: text/javascript
+order: 2000

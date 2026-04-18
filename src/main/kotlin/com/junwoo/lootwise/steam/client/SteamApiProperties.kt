@@ -7,5 +7,8 @@ import java.time.Duration
 data class SteamApiProperties(
     val baseUrl: String,
     val reviewsBaseUrl: String,
+    val countryCode: String = "KR",
+    val language: String = "koreana",
+    val reviewSyncLimit: Int = 20,
     val timeout: Duration = Duration.ofSeconds(5),
 )
