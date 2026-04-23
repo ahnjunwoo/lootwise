@@ -1,0 +1,31 @@
+$kind: http-request
+name: Get Filtered Deals
+method: GET
+url: '{{baseUrl}}/api/v1/deals'
+description: Returns discounted deals with keyword, price, discount, review, and sort filters.
+order: 2000
+headers:
+  - key: Accept
+    value: application/json
+queryParams:
+  - key: keyword
+    value: '{{keyword}}'
+  - key: minDiscountPercent
+    value: '{{minDiscountPercent}}'
+  - key: maxFinalPrice
+    value: '{{maxFinalPrice}}'
+  - key: minReviewScore
+    value: '{{minReviewScore}}'
+  - key: reviewScoreDesc
+    value: '{{reviewScoreDesc}}'
+  - key: sort
+    value: '{{sort}}'
+  - key: limit
+    value: '{{limit}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+          pm.response.to.have.status(200);
+      });

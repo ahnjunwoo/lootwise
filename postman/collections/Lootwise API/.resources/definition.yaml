@@ -1,6 +1,22 @@
 $kind: collection
+name: Lootwise API
 description: Postman collection for local Lootwise deal API testing.
 variables:
-  baseUrl: http://localhost:8080
-  limit: "20"
-  appId: "570"
+  - key: baseUrl
+    value: 'http://localhost:8080'
+  - key: limit
+    value: '20'
+  - key: appId
+    value: '570'
+  - key: keyword
+    value: 'dark'
+  - key: minDiscountPercent
+    value: '50'
+  - key: maxFinalPrice
+    value: '20000'
+  - key: minReviewScore
+    value: '8'
+  - key: reviewScoreDesc
+    value: 'Positive'
+  - key: sort
+    value: 'DISCOUNT_DESC'

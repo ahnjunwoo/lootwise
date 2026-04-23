@@ -15,6 +15,27 @@
 
 #### Query Parameters
 
+- `keyword`: `string`
+  - optional
+  - game name search
+- `minDiscountPercent`: `number`
+  - optional
+  - min: `1`
+  - max: `100`
+- `maxFinalPrice`: `number`
+  - optional
+  - min: `0`
+- `minReviewScore`: `number`
+  - optional
+  - min: `0`
+  - max: `100`
+- `reviewScoreDesc`: `string`
+  - optional
+  - partial match, case-insensitive
+- `sort`: `DealSort`
+  - optional
+  - default: `DISCOUNT_DESC`
+  - values: `DISCOUNT_DESC`, `PRICE_ASC`, `REVIEW_COUNT_DESC`, `REVIEW_SCORE_DESC`, `LATEST_DESC`
 - `limit`: `number`
   - optional
   - default: `20`
@@ -32,10 +53,17 @@
     "finalPrice": 9900,
     "discountPercent": 50,
     "reviewScoreDesc": "Very Positive",
+    "reviewScoreDescKo": "매우 긍정적",
     "steamUrl": "https://store.steampowered.com/app/570",
     "capsuleImageUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/570/header.jpg"
   }
 ]
+```
+
+#### Filtered Request Example
+
+```http
+GET /api/v1/deals?keyword=dark&minDiscountPercent=50&maxFinalPrice=20000&minReviewScore=8&reviewScoreDesc=Positive&sort=PRICE_ASC&limit=20
 ```
 
 #### Response Fields
@@ -46,6 +74,7 @@
 - `finalPrice`: `number`
 - `discountPercent`: `number`
 - `reviewScoreDesc`: `string | null`
+- `reviewScoreDescKo`: `string | null`
 - `steamUrl`: `string`
 - `capsuleImageUrl`: `string | null`
 
@@ -79,6 +108,7 @@
   "finalPrice": 9900,
   "discountPercent": 50,
   "reviewScoreDesc": "Very Positive",
+  "reviewScoreDescKo": "매우 긍정적",
   "steamUrl": "https://store.steampowered.com/app/570",
   "capsuleImageUrl": "https://cdn.cloudflare.steamstatic.com/steam/apps/570/header.jpg"
 }
@@ -103,6 +133,7 @@ export type DealSummary = {
   finalPrice: number;
   discountPercent: number;
   reviewScoreDesc: string | null;
+  reviewScoreDescKo: string | null;
   steamUrl: string;
   capsuleImageUrl: string | null;
 };
@@ -112,6 +143,23 @@ export type DealDetail = DealSummary;
 export type ApiErrorResponse = {
   message: string;
   timestamp: string;
+};
+
+export type DealSort =
+  | 'DISCOUNT_DESC'
+  | 'PRICE_ASC'
+  | 'REVIEW_COUNT_DESC'
+  | 'REVIEW_SCORE_DESC'
+  | 'LATEST_DESC';
+
+export type DealSearchParams = {
+  keyword?: string;
+  minDiscountPercent?: number;
+  maxFinalPrice?: number;
+  minReviewScore?: number;
+  reviewScoreDesc?: string;
+  sort?: DealSort;
+  limit?: number;
 };
 ```
 
@@ -127,6 +175,7 @@ Create a frontend page for the Lootwise deals API.
 
 API:
 - GET http://localhost:8080/api/v1/deals?limit=20
+- GET http://localhost:8080/api/v1/deals?keyword=dark&minDiscountPercent=50&maxFinalPrice=20000&sort=PRICE_ASC&limit=20
 - GET http://localhost:8080/api/v1/deals/{appId}
 
 Types:
@@ -137,14 +186,33 @@ type DealSummary = {
   finalPrice: number;
   discountPercent: number;
   reviewScoreDesc: string | null;
+  reviewScoreDescKo: string | null;
   steamUrl: string;
   capsuleImageUrl: string | null;
 };
 
 type DealDetail = DealSummary;
 
+type DealSort =
+  | 'DISCOUNT_DESC'
+  | 'PRICE_ASC'
+  | 'REVIEW_COUNT_DESC'
+  | 'REVIEW_SCORE_DESC'
+  | 'LATEST_DESC';
+
+type DealSearchParams = {
+  keyword?: string;
+  minDiscountPercent?: number;
+  maxFinalPrice?: number;
+  minReviewScore?: number;
+  reviewScoreDesc?: string;
+  sort?: DealSort;
+  limit?: number;
+};
+
 Requirements:
 - deals list page
+- deal filters: keyword, minimum discount, maximum price, review score, review text, sort
 - deal detail page
 - loading/error/empty states
 - fetch from real backend

@@ -1,14 +1,16 @@
 $kind: http-request
-description: Returns deal detail for the given Steam appId.
-url: "{{baseUrl}}/api/v1/deals/{{appId}}"
+name: Get Deal Detail
 method: GET
+url: '{{baseUrl}}/api/v1/deals/{{appId}}'
+description: Returns deal detail for the given Steam appId.
+order: 3000
 headers:
-  Accept: application/json
+  - key: Accept
+    value: application/json
 scripts:
   - type: afterResponse
+    language: text/javascript
     code: |-
       pm.test("Status code is 200", function () {
           pm.response.to.have.status(200);
       });
-    language: text/javascript
-order: 2000

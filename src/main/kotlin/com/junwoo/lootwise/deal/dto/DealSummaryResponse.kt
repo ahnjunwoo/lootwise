@@ -9,6 +9,7 @@ data class DealSummaryResponse(
     val finalPrice: BigDecimal,
     val discountPercent: Int,
     val reviewScoreDesc: String?,
+    val reviewScoreDescKo: String?,
     val steamUrl: String,
     val capsuleImageUrl: String?,
 )

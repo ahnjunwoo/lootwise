@@ -1,16 +1,19 @@
 $kind: http-request
-description: Returns discounted deals sorted by discountPercent desc and totalReviews desc.
-url: "{{baseUrl}}/api/v1/deals?limit={{limit}}"
+name: Get Top Deals
 method: GET
+url: '{{baseUrl}}/api/v1/deals'
+description: Returns discounted deals sorted by discountPercent desc and totalReviews desc.
+order: 1000
 headers:
-  Accept: application/json
+  - key: Accept
+    value: application/json
 queryParams:
-  limit: "{{limit}}"
+  - key: limit
+    value: '{{limit}}'
 scripts:
   - type: afterResponse
+    language: text/javascript
     code: |-
       pm.test("Status code is 200", function () {
           pm.response.to.have.status(200);
       });
-    language: text/javascript
-order: 1000

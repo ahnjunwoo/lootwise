@@ -17,6 +17,30 @@
     {
       "key": "appId",
       "value": "570"
+    },
+    {
+      "key": "keyword",
+      "value": "dark"
+    },
+    {
+      "key": "minDiscountPercent",
+      "value": "50"
+    },
+    {
+      "key": "maxFinalPrice",
+      "value": "20000"
+    },
+    {
+      "key": "minReviewScore",
+      "value": "8"
+    },
+    {
+      "key": "reviewScoreDesc",
+      "value": "Positive"
+    },
+    {
+      "key": "sort",
+      "value": "DISCOUNT_DESC"
     }
   ],
   "item": [
@@ -64,6 +88,74 @@
               ]
             },
             "description": "Returns discounted deals sorted by discountPercent desc and totalReviews desc."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Filtered Deals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/deals?keyword={{keyword}}&minDiscountPercent={{minDiscountPercent}}&maxFinalPrice={{maxFinalPrice}}&minReviewScore={{minReviewScore}}&reviewScoreDesc={{reviewScoreDesc}}&sort={{sort}}&limit={{limit}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "deals"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "{{keyword}}"
+                },
+                {
+                  "key": "minDiscountPercent",
+                  "value": "{{minDiscountPercent}}"
+                },
+                {
+                  "key": "maxFinalPrice",
+                  "value": "{{maxFinalPrice}}"
+                },
+                {
+                  "key": "minReviewScore",
+                  "value": "{{minReviewScore}}"
+                },
+                {
+                  "key": "reviewScoreDesc",
+                  "value": "{{reviewScoreDesc}}"
+                },
+                {
+                  "key": "sort",
+                  "value": "{{sort}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "{{limit}}"
+                }
+              ]
+            },
+            "description": "Returns discounted deals with keyword, price, discount, review, and sort filters."
           },
           "response": []
         },

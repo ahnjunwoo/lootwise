@@ -1,16 +1,19 @@
 $kind: http-request
-description: Validation example for limit.
-url: "{{baseUrl}}/api/v1/deals?limit=0"
+name: Get Top Deals - Invalid Limit
 method: GET
+url: '{{baseUrl}}/api/v1/deals'
+description: Validation example for limit.
+order: 4000
 headers:
-  Accept: application/json
+  - key: Accept
+    value: application/json
 queryParams:
-  limit: "0"
+  - key: limit
+    value: '0'
 scripts:
   - type: afterResponse
+    language: text/javascript
     code: |-
       pm.test("Status code is 400", function () {
           pm.response.to.have.status(400);
       });
-    language: text/javascript
-order: 3000

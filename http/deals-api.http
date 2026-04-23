@@ -1,6 +1,12 @@
 @baseUrl = http://localhost:8080
 @limit = 20
 @appId = 570
+@keyword = dark
+@minDiscountPercent = 50
+@maxFinalPrice = 20000
+@minReviewScore = 8
+@reviewScoreDesc = Positive
+@sort = DISCOUNT_DESC
 
 ### Top deals
 GET {{baseUrl}}/api/v1/deals?limit={{limit}}
@@ -21,10 +27,16 @@ client.test("Top deals status is 200", function() {
 #     "finalPrice": 9.99,
 #     "discountPercent": 50,
 #     "reviewScoreDesc": "Very Positive",
+#     "reviewScoreDescKo": "매우 긍정적",
 #     "steamUrl": "https://store.steampowered.com/app/570",
 #     "capsuleImageUrl": "https://cdn.example.com/570.jpg"
 #   }
 # ]
+
+###
+### Filtered deals
+GET {{baseUrl}}/api/v1/deals?keyword={{keyword}}&minDiscountPercent={{minDiscountPercent}}&maxFinalPrice={{maxFinalPrice}}&minReviewScore={{minReviewScore}}&reviewScoreDesc={{reviewScoreDesc}}&sort={{sort}}&limit={{limit}}
+Accept: application/json
 
 ###
 ### Deal detail
@@ -45,6 +57,7 @@ client.test("Deal detail status is 200", function() {
 #   "finalPrice": 9.99,
 #   "discountPercent": 50,
 #   "reviewScoreDesc": "Very Positive",
+#   "reviewScoreDescKo": "매우 긍정적",
 #   "steamUrl": "https://store.steampowered.com/app/570",
 #   "capsuleImageUrl": "https://cdn.example.com/570.jpg"
 # }

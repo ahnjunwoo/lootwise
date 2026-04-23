@@ -1,6 +1,8 @@
 package com.junwoo.lootwise.deal.service
 
 import com.junwoo.lootwise.deal.dto.DealDetailResponse
+import com.junwoo.lootwise.deal.dto.DealSearchRequest
+import com.junwoo.lootwise.deal.dto.DealSort
 import com.junwoo.lootwise.deal.dto.DealSummaryResponse
 import com.junwoo.lootwise.deal.repository.SteamGameRepository
 import com.junwoo.lootwise.deal.repository.SteamPriceSnapshotRepository
@@ -19,7 +21,12 @@ class DealQueryService(
 ) {
     @Transactional(readOnly = true)
     fun getTopDeals(limit: Int): List<DealSummaryResponse> {
-        require(limit > 0) { "limit must be greater than 0" }
+        return getTopDeals(DealSearchRequest(limit = limit))
+    }
+
+    @Transactional(readOnly = true)
+    fun getTopDeals(request: DealSearchRequest): List<DealSummaryResponse> {
+        require(request.limit > 0) { "limit must be greater than 0" }
 
         val latestDiscountedSnapshots = findLatestDiscountedSnapshots()
         if (latestDiscountedSnapshots.isEmpty()) {
@@ -34,7 +41,7 @@ class DealQueryService(
             snapshots = latestDiscountedSnapshots,
             gamesByAppId = gamesByAppId,
             reviewsByAppId = reviewsByAppId,
-            limit = limit,
+            request = request,
         )
     }
 
@@ -73,6 +80,7 @@ class DealQueryService(
             finalPrice = snapshot.finalPrice ?: throw IllegalStateException("finalPrice is required"),
             discountPercent = snapshot.discountPercent,
             reviewScoreDesc = reviewSummary?.reviewScoreDesc,
+            reviewScoreDescKo = ReviewScoreDescriptionTranslator.toKorean(reviewSummary?.reviewScoreDesc),
             steamUrl = game.steamUrl,
             capsuleImageUrl = game.capsuleImageUrl,
         )
@@ -89,6 +97,7 @@ class DealQueryService(
             finalPrice = snapshot.finalPrice ?: throw IllegalStateException("finalPrice is required"),
             discountPercent = snapshot.discountPercent,
             reviewScoreDesc = reviewSummary?.reviewScoreDesc,
+            reviewScoreDescKo = ReviewScoreDescriptionTranslator.toKorean(reviewSummary?.reviewScoreDesc),
             steamUrl = game.steamUrl,
             capsuleImageUrl = game.capsuleImageUrl,
         )
@@ -100,27 +109,101 @@ class DealQueryService(
             reviewsByAppId: Map<Long, SteamReviewSummary>,
             limit: Int,
         ): List<DealSummaryResponse> =
+            buildTopDeals(
+                snapshots = snapshots,
+                gamesByAppId = gamesByAppId,
+                reviewsByAppId = reviewsByAppId,
+                request = DealSearchRequest(limit = limit),
+            )
+
+        internal fun buildTopDeals(
+            snapshots: List<SteamPriceSnapshot>,
+            gamesByAppId: Map<Long, SteamGame>,
+            reviewsByAppId: Map<Long, SteamReviewSummary>,
+            request: DealSearchRequest,
+        ): List<DealSummaryResponse> =
             snapshots
                 .asSequence()
                 .filter { it.discountPercent > 0 }
+                .filter { snapshot ->
+                    request.minDiscountPercent?.let { snapshot.discountPercent >= it } ?: true
+                }
+                .filter { snapshot ->
+                    request.maxFinalPrice?.let { maxPrice ->
+                        snapshot.finalPrice?.let { it <= maxPrice } ?: false
+                    } ?: true
+                }
                 .mapNotNull { snapshot ->
                     val game = gamesByAppId[snapshot.appId] ?: return@mapNotNull null
+                    if (!matchesKeyword(game, request.keyword)) {
+                        return@mapNotNull null
+                    }
+                    val reviewSummary = reviewsByAppId[snapshot.appId]
+                    if (!matchesReviewScore(reviewSummary, request.minReviewScore)) {
+                        return@mapNotNull null
+                    }
+                    if (!matchesReviewScoreDesc(reviewSummary, request.reviewScoreDesc)) {
+                        return@mapNotNull null
+                    }
                     DealSummaryResponse(
                         appId = game.appId,
                         name = game.name,
                         originalPrice = snapshot.originalPrice,
                         finalPrice = snapshot.finalPrice ?: return@mapNotNull null,
                         discountPercent = snapshot.discountPercent,
-                        reviewScoreDesc = reviewsByAppId[snapshot.appId]?.reviewScoreDesc,
+                        reviewScoreDesc = reviewSummary?.reviewScoreDesc,
+                        reviewScoreDescKo = ReviewScoreDescriptionTranslator.toKorean(reviewSummary?.reviewScoreDesc),
                         steamUrl = game.steamUrl,
                         capsuleImageUrl = game.capsuleImageUrl,
                     )
                 }
-                .sortedWith(
+                .sortedWith(dealComparator(request.sort, reviewsByAppId, snapshots))
+                .take(request.limit)
+                .toList()
+
+        private fun matchesKeyword(game: SteamGame, keyword: String?): Boolean {
+            val normalizedKeyword = keyword?.trim()?.takeIf { it.isNotEmpty() } ?: return true
+            return game.name.contains(normalizedKeyword, ignoreCase = true)
+        }
+
+        private fun matchesReviewScore(
+            reviewSummary: SteamReviewSummary?,
+            minReviewScore: Int?,
+        ): Boolean =
+            minReviewScore?.let { minScore ->
+                reviewSummary?.reviewScore?.let { it >= minScore } ?: false
+            } ?: true
+
+        private fun matchesReviewScoreDesc(
+            reviewSummary: SteamReviewSummary?,
+            reviewScoreDesc: String?,
+        ): Boolean {
+            val normalizedDesc = reviewScoreDesc?.trim()?.takeIf { it.isNotEmpty() } ?: return true
+            return reviewSummary?.reviewScoreDesc?.contains(normalizedDesc, ignoreCase = true) ?: false
+        }
+
+        private fun dealComparator(
+            sort: DealSort,
+            reviewsByAppId: Map<Long, SteamReviewSummary>,
+            snapshots: List<SteamPriceSnapshot>,
+        ): Comparator<DealSummaryResponse> =
+            when (sort) {
+                DealSort.DISCOUNT_DESC ->
                     compareByDescending<DealSummaryResponse> { it.discountPercent }
                         .thenByDescending { reviewsByAppId[it.appId]?.totalReviews ?: 0 }
-                )
-                .take(limit)
-                .toList()
+                DealSort.PRICE_ASC ->
+                    compareBy<DealSummaryResponse> { it.finalPrice }
+                        .thenByDescending { it.discountPercent }
+                DealSort.REVIEW_COUNT_DESC ->
+                    compareByDescending<DealSummaryResponse> { reviewsByAppId[it.appId]?.totalReviews ?: 0 }
+                        .thenByDescending { it.discountPercent }
+                DealSort.REVIEW_SCORE_DESC ->
+                    compareByDescending<DealSummaryResponse> { reviewsByAppId[it.appId]?.reviewScore ?: -1 }
+                        .thenByDescending { reviewsByAppId[it.appId]?.totalReviews ?: 0 }
+                DealSort.LATEST_DESC ->
+                    compareByDescending<DealSummaryResponse> { response ->
+                        snapshots.firstOrNull { it.appId == response.appId }?.collectedAt
+                    }
+            }
     }
 }
