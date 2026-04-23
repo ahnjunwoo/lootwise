@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Lootwise API
+  version: 1.0.0
+  description: API spec for the Lootwise frontend.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /api/v1/deals:
+    get:
+      summary: Get top discounted deals
+      operationId: getTopDeals
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DealSummaryResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+
+  /api/v1/deals/{appId}:
+    get:
+      summary: Get discounted deal detail by appId
+      operationId: getDealDetail
+      parameters:
+        - name: appId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DealDetailResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        "404":
+          description: Deal not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+
+components:
+  schemas:
+    DealSummaryResponse:
+      type: object
+      required:
+        - appId
+        - name
+        - finalPrice
+        - discountPercent
+        - steamUrl
+      properties:
+        appId:
+          type: integer
+          format: int64
+        name:
+          type: string
+        originalPrice:
+          type: number
+          format: double
+          nullable: true
+        finalPrice:
+          type: number
+          format: double
+        discountPercent:
+          type: integer
+        reviewScoreDesc:
+          type: string
+          nullable: true
+        steamUrl:
+          type: string
+        capsuleImageUrl:
+          type: string
+          nullable: true
+
+    DealDetailResponse:
+      allOf:
+        - $ref: "#/components/schemas/DealSummaryResponse"
+
+    ApiErrorResponse:
+      type: object
+      required:
+        - message
+        - timestamp
+      properties:
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
