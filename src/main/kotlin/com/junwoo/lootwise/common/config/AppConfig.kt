@@ -30,7 +30,10 @@ class AppConfig {
         object : WebMvcConfigurer {
             override fun addCorsMappings(registry: CorsRegistry) {
                 registry.addMapping("/api/**")
-                    .allowedOrigins("http://localhost:3000")
+                    .allowedOrigins(
+                        "http://localhost:3000",
+                        "https://lootwise-web.vercel.app",
+                    )
                     .allowedMethods("GET", "OPTIONS")
                     .allowedHeaders("*")
                     .allowCredentials(false)
