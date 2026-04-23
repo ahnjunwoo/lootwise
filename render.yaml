@@ -1,0 +1,52 @@
+services:
+  - type: web
+    runtime: docker
+    name: lootwise-backend
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: DB_HOST
+        fromDatabase:
+          name: lootwise-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: lootwise-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: lootwise-postgres
+          property: database
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: lootwise-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: lootwise-postgres
+          property: password
+      - key: STEAM_API_BASE_URL
+        value: https://store.steampowered.com
+      - key: STEAM_API_REVIEWS_BASE_URL
+        value: https://store.steampowered.com
+      - key: STEAM_API_COUNTRY_CODE
+        value: KR
+      - key: STEAM_API_LANGUAGE
+        value: koreana
+      - key: STEAM_API_REVIEW_SYNC_LIMIT
+        value: 20
+      - key: STEAM_BATCH_COLLECT_CRON
+        value: "0 0 */3 * * *"
+
+databases:
+  - name: lootwise-postgres
+    plan: free
+    region: singapore
+    databaseName: lootwise
+    user: lootwise
+    postgresMajorVersion: "16"
