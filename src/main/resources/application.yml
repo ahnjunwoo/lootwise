@@ -21,6 +21,12 @@ management:
       exposure:
         include: health,info
 
+auth:
+  jwt:
+    issuer: lootwise
+    secret: ${JWT_SECRET:local-development-jwt-secret-change-me}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:15m}
+
 steam:
   api:
     base-url: https://store.steampowered.com

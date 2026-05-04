@@ -17,6 +17,41 @@ export type ApiErrorResponse = {
   timestamp: string;
 };
 
+export type UserRole = 'USER';
+
+export type UserStatus = 'ACTIVE' | 'WITHDRAWN';
+
+export type SignUpRequest = {
+  email: string;
+  password: string;
+  nickname: string;
+};
+
+export type SignUpResponse = {
+  userId: number;
+  email: string;
+  nickname: string;
+};
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresInSeconds: number;
+};
+
+export type UserMeResponse = {
+  userId: number;
+  email: string;
+  nickname: string;
+  role: UserRole;
+  status: UserStatus;
+};
+
 export type DealSort =
   | 'DISCOUNT_DESC'
   | 'PRICE_ASC'

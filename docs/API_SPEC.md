@@ -8,7 +8,185 @@
 
 ## Endpoints
 
-### 1. Get Top Deals
+### 1. Sign Up
+
+- Method: `POST`
+- Path: `/api/v1/auth/signup`
+- Auth: not required
+
+#### Request Body
+
+```json
+{
+  "email": "test-user@example.com",
+  "password": "Password123!",
+  "nickname": "loot_user"
+}
+```
+
+#### Validation
+
+- `email`: required, email format, max length `255`
+- `password`: required, min length `8`, max length `72`
+- `nickname`: required, length `2` to `30`
+- `nickname` allowed characters: English letters, numbers, Korean characters, underscore
+
+#### Response `201 Created`
+
+```json
+{
+  "userId": 1,
+  "email": "test-user@example.com",
+  "nickname": "loot_user"
+}
+```
+
+#### Error `400 Bad Request`
+
+```json
+{
+  "message": "Password must be between 8 and 72 characters",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+#### Error `409 Conflict`
+
+```json
+{
+  "message": "Email already exists: test-user@example.com",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+#### FE Notes
+
+- `password` and `passwordHash` are never returned.
+- Backend normalizes email with trim and lowercase before saving.
+
+### 2. Login
+
+- Method: `POST`
+- Path: `/api/v1/auth/login`
+- Auth: not required
+
+#### Request Body
+
+```json
+{
+  "email": "test-user@example.com",
+  "password": "Password123!"
+}
+```
+
+#### Validation
+
+- `email`: required, email format, max length `255`
+- `password`: required, max length `72`
+
+#### Response `200 OK`
+
+```json
+{
+  "accessToken": "jwt-access-token",
+  "tokenType": "Bearer",
+  "expiresInSeconds": 900
+}
+```
+
+#### Error `401 Unauthorized`
+
+```json
+{
+  "message": "Invalid email or password",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+#### FE Notes
+
+- Email not found, password mismatch, and withdrawn user all return the same error.
+- Send authenticated API requests with `Authorization: Bearer <accessToken>`.
+- Refresh token is not implemented yet.
+
+### 3. Get Me
+
+- Method: `GET`
+- Path: `/api/v1/users/me`
+- Auth: required
+
+#### Request Headers
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+#### Response `200 OK`
+
+```json
+{
+  "userId": 1,
+  "email": "test-user@example.com",
+  "nickname": "loot_user",
+  "role": "USER",
+  "status": "ACTIVE"
+}
+```
+
+#### Response Fields
+
+- `userId`: `number`
+- `email`: `string`
+- `nickname`: `string`
+- `role`: `UserRole`
+  - values: `USER`
+- `status`: `UserStatus`
+  - values: `ACTIVE`, `WITHDRAWN`
+
+#### Error `401 Unauthorized`
+
+Missing token:
+
+```json
+{
+  "message": "Authentication is required",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+Invalid or expired token:
+
+```json
+{
+  "message": "Invalid or expired access token",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+#### Error `403 Forbidden`
+
+```json
+{
+  "message": "User is withdrawn: 1",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+#### Error `404 Not Found`
+
+```json
+{
+  "message": "User not found: 1",
+  "timestamp": "2026-04-30T08:30:00Z"
+}
+```
+
+#### FE Notes
+
+- `password` and `passwordHash` are never returned.
+- Store only `accessToken` on the frontend side. Do not infer current user fields from token payload; call this endpoint after login or page refresh.
+
+### 4. Get Top Deals
 
 - Method: `GET`
 - Path: `/api/v1/deals`
@@ -87,7 +265,7 @@ GET /api/v1/deals?keyword=dark&minDiscountPercent=50&maxFinalPrice=20000&minRevi
 }
 ```
 
-### 2. Get Deal Detail
+### 5. Get Deal Detail
 
 - Method: `GET`
 - Path: `/api/v1/deals/{appId}`
@@ -145,6 +323,41 @@ export type ApiErrorResponse = {
   timestamp: string;
 };
 
+export type UserRole = 'USER';
+
+export type UserStatus = 'ACTIVE' | 'WITHDRAWN';
+
+export type SignUpRequest = {
+  email: string;
+  password: string;
+  nickname: string;
+};
+
+export type SignUpResponse = {
+  userId: number;
+  email: string;
+  nickname: string;
+};
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresInSeconds: number;
+};
+
+export type UserMeResponse = {
+  userId: number;
+  email: string;
+  nickname: string;
+  role: UserRole;
+  status: UserStatus;
+};
+
 export type DealSort =
   | 'DISCOUNT_DESC'
   | 'PRICE_ASC'
@@ -174,11 +387,31 @@ export type DealSearchParams = {
 Create a frontend page for the Lootwise deals API.
 
 API:
+- POST http://localhost:8080/api/v1/auth/signup
+- POST http://localhost:8080/api/v1/auth/login
+- GET http://localhost:8080/api/v1/users/me
 - GET http://localhost:8080/api/v1/deals?limit=20
 - GET http://localhost:8080/api/v1/deals?keyword=dark&minDiscountPercent=50&maxFinalPrice=20000&sort=PRICE_ASC&limit=20
 - GET http://localhost:8080/api/v1/deals/{appId}
 
 Types:
+type UserRole = 'USER';
+type UserStatus = 'ACTIVE' | 'WITHDRAWN';
+
+type LoginResponse = {
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresInSeconds: number;
+};
+
+type UserMeResponse = {
+  userId: number;
+  email: string;
+  nickname: string;
+  role: UserRole;
+  status: UserStatus;
+};
+
 type DealSummary = {
   appId: number;
   name: string;
@@ -211,6 +444,9 @@ type DealSearchParams = {
 };
 
 Requirements:
+- sign up page
+- login page
+- authenticated current user request using Authorization Bearer token
 - deals list page
 - deal filters: keyword, minimum discount, maximum price, review score, review text, sort
 - deal detail page

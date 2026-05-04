@@ -1,0 +1,94 @@
+@baseUrl = http://localhost:8080
+@email = test-user@example.com
+@password = Password123!
+@nickname = loot_user
+@accessToken = Bearer YOUR_TOKEN
+
+### Sign up
+POST {{baseUrl}}/api/v1/auth/signup
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "nickname": "{{nickname}}"
+}
+
+> {%
+client.test("Sign up status is 201", function() {
+  client.assert(response.status === 201, "Expected 201 Created");
+});
+%}
+
+###
+### Sign up validation example: invalid password
+POST {{baseUrl}}/api/v1/auth/signup
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "invalid-password@example.com",
+  "password": "short",
+  "nickname": "loot_user"
+}
+
+> {%
+client.test("Invalid password status is 400", function() {
+  client.assert(response.status === 400, "Expected 400 Bad Request");
+});
+%}
+
+###
+### Sign up conflict example: duplicated email
+POST {{baseUrl}}/api/v1/auth/signup
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "nickname": "{{nickname}}"
+}
+
+> {%
+client.test("Duplicated email status is 409", function() {
+  client.assert(response.status === 409, "Expected 409 Conflict");
+});
+%}
+
+###
+### Login
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+client.test("Login status is 200", function() {
+  client.assert(response.status === 200, "Expected 200 OK");
+});
+
+client.global.set("accessToken", response.body.tokenType + " " + response.body.accessToken);
+%}
+
+###
+### Login failure example: invalid credentials
+POST {{baseUrl}}/api/v1/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{email}}",
+  "password": "WrongPassword123!"
+}
+
+> {%
+client.test("Invalid credentials status is 401", function() {
+  client.assert(response.status === 401, "Expected 401 Unauthorized");
+});
+%}

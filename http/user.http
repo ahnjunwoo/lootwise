@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:8080
+@accessToken = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJsb290d2lzZSIsImlhdCI6MTc3NzUzMTUzMSwiZXhwIjoxNzc3NTMyNDMxLCJ1c2VySWQiOjEsInJvbGUiOiJVU0VSIn0.Gq3_qhC25uLMWLnqAafAJXDPM1lobIYKAb2icTo_gAU
+
+### Get me
+GET {{baseUrl}}/api/v1/users/me
+Authorization: {{accessToken}}
+Accept: application/json
+
+> {%
+client.test("Get me status is 200", function() {
+  client.assert(response.status === 200, "Expected 200 OK");
+});
+%}
+
+###
+### Get me failure example: missing token
+GET {{baseUrl}}/api/v1/users/me
+Accept: application/json
+
+> {%
+client.test("Missing token status is 401", function() {
+  client.assert(response.status === 401, "Expected 401 Unauthorized");
+});
+%}
+
+###
+### Get me failure example: invalid token
+GET {{baseUrl}}/api/v1/users/me
+Authorization: Bearer invalid.token.value
+Accept: application/json
+
+> {%
+client.test("Invalid token status is 401", function() {
+  client.assert(response.status === 401, "Expected 401 Unauthorized");
+});
+%}
